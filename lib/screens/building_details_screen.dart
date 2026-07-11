@@ -1,169 +1,243 @@
 import 'package:flutter/material.dart';
 
-import '../models/building.dart';
-import 'unit_screen.dart';
+import '../core/widgets/info_tile.dart';
+import '../core/widgets/quick_action_card.dart';
+import '../core/widgets/section_title.dart';
+import '../core/widgets/stat_card.dart';
 
 class BuildingDetailsScreen extends StatelessWidget {
-  final Building building;
-
-  const BuildingDetailsScreen({
-    super.key,
-    required this.building,
-  });
-
-  Widget menuCard(
-      BuildContext context, {
-        required IconData icon,
-        required String title,
-        required Color color,
-        required VoidCallback onTap,
-      }) {
-    return Card(
-      elevation: 3,
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: color.withOpacity(.15),
-          child: Icon(icon, color: color),
-        ),
-        title: Text(
-          title,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        trailing: const Icon(Icons.arrow_forward_ios),
-        onTap: onTap,
-      ),
-    );
-  }
+  const BuildingDetailsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(building.name),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(18),
-        children: [
+      body: CustomScrollView(
+        slivers: [
 
-          Card(
-            elevation: 4,
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
+          SliverAppBar(
+            expandedHeight: 230,
+            pinned: true,
+            backgroundColor: Colors.indigo,
+
+            flexibleSpace: FlexibleSpaceBar(
+              title: const Text("Green Heights"),
+              background: Stack(
+                fit: StackFit.expand,
                 children: [
 
-                  CircleAvatar(
-                    radius: 45,
-                    backgroundColor: Colors.indigo.shade100,
-                    child: const Icon(
-                      Icons.apartment,
-                      size: 45,
-                      color: Colors.indigo,
-                    ),
+                  Image.network(
+                    "https://images.unsplash.com/photo-1460317442991-0ec209397118?w=1200",
+                    fit: BoxFit.cover,
                   ),
 
-                  const SizedBox(height: 18),
-
-                  Text(
-                    building.name,
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
+                  Container(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.bottomCenter,
+                        end: Alignment.topCenter,
+                        colors: [
+                          Colors.black87,
+                          Colors.transparent,
+                        ],
+                      ),
                     ),
-                  ),
-
-                  const SizedBox(height: 8),
-
-                  Text(
-                    building.buildingCode,
-                    style: const TextStyle(
-                      color: Colors.indigo,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  Text(
-                    "${building.estate}, ${building.town}",
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  Chip(
-                    label: Text(
-                      building.verified
-                          ? "Verified"
-                          : "Pending Verification",
-                    ),
-                    backgroundColor: building.verified
-                        ? Colors.green.shade100
-                        : Colors.orange.shade100,
                   ),
                 ],
               ),
             ),
           ),
 
-          const SizedBox(height: 20),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
 
-          menuCard(
-            context,
-            icon: Icons.home_work,
-            title: "Units",
-            color: Colors.blue,
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => UnitScreen(
-                    building: building,
+                  const Row(
+                    children: [
+
+                      Icon(
+                        Icons.verified,
+                        color: Colors.green,
+                      ),
+
+                      SizedBox(width: 8),
+
+                      Text(
+                        "Verified Building",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      )
+                    ],
                   ),
-                ),
-              );
-            },
-          ),
 
-          menuCard(
-            context,
-            icon: Icons.people,
-            title: "Tenants",
-            color: Colors.green,
-            onTap: () {},
-          ),
+                  const SizedBox(height: 18),
 
-          menuCard(
-            context,
-            icon: Icons.payments,
-            title: "Payments",
-            color: Colors.orange,
-            onTap: () {},
-          ),
+                  const InfoTile(
+                    icon: Icons.location_city,
+                    title: "County",
+                    value: "Nairobi",
+                  ),
 
-          menuCard(
-            context,
-            icon: Icons.build,
-            title: "Maintenance",
-            color: Colors.red,
-            onTap: () {},
-          ),
+                  const InfoTile(
+                    icon: Icons.location_on,
+                    title: "Estate",
+                    value: "Westlands",
+                  ),
 
-          menuCard(
-            context,
-            icon: Icons.qr_code,
-            title: "Building QR Code",
-            color: Colors.purple,
-            onTap: () {},
-          ),
+                  const InfoTile(
+                    icon: Icons.qr_code,
+                    title: "Building Code",
+                    value: "KEJ-A3F92K",
+                  ),
 
-          menuCard(
-            context,
-            icon: Icons.bar_chart,
-            title: "Analytics",
-            color: Colors.teal,
-            onTap: () {},
+                  const SizedBox(height: 25),
+
+                  const SectionTitle(
+                    title: "Building Statistics",
+                  ),
+
+                  GridView.count(
+                    crossAxisCount: 2,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    crossAxisSpacing: 15,
+                    mainAxisSpacing: 15,
+                    childAspectRatio: 1.15,
+                    children: const [
+
+                      StatCard(
+                        title: "Units",
+                        value: "120",
+                        icon: Icons.home_work,
+                      ),
+
+                      StatCard(
+                        title: "Occupied",
+                        value: "97",
+                        icon: Icons.people,
+                        color: Colors.green,
+                      ),
+
+                      StatCard(
+                        title: "Vacant",
+                        value: "23",
+                        icon: Icons.meeting_room,
+                        color: Colors.orange,
+                      ),
+
+                      StatCard(
+                        title: "Revenue",
+                        value: "KES 2.4M",
+                        icon: Icons.payments,
+                        color: Colors.blue,
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 30),
+
+                  const SectionTitle(
+                    title: "Quick Actions",
+                  ),
+
+                  GridView.count(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    crossAxisCount: 3,
+                    crossAxisSpacing: 15,
+                    mainAxisSpacing: 15,
+                    childAspectRatio: .95,
+                    children: [
+
+                      QuickActionCard(
+                        title: "Units",
+                        icon: Icons.home,
+                        onTap: () {},
+                      ),
+
+                      QuickActionCard(
+                        title: "Tenants",
+                        icon: Icons.people,
+                        onTap: () {},
+                      ),
+
+                      QuickActionCard(
+                        title: "Payments",
+                        icon: Icons.payments,
+                        onTap: () {},
+                      ),
+
+                      QuickActionCard(
+                        title: "Maintenance",
+                        icon: Icons.build,
+                        onTap: () {},
+                      ),
+
+                      QuickActionCard(
+                        title: "Analytics",
+                        icon: Icons.bar_chart,
+                        onTap: () {},
+                      ),
+
+                      QuickActionCard(
+                        title: "QR Code",
+                        icon: Icons.qr_code_2,
+                        onTap: () {},
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 30),
+
+                  const SectionTitle(
+                    title: "Recent Activity",
+                  ),
+
+                  Card(
+                    child: Column(
+                      children: const [
+
+                        ListTile(
+                          leading: Icon(
+                            Icons.person_add,
+                            color: Colors.green,
+                          ),
+                          title: Text("Apartment A12 rented"),
+                          subtitle: Text("2 hours ago"),
+                        ),
+
+                        Divider(height: 1),
+
+                        ListTile(
+                          leading: Icon(
+                            Icons.payments,
+                            color: Colors.blue,
+                          ),
+                          title: Text("Rent payment received"),
+                          subtitle: Text("Today"),
+                        ),
+
+                        Divider(height: 1),
+
+                        ListTile(
+                          leading: Icon(
+                            Icons.build,
+                            color: Colors.orange,
+                          ),
+                          title: Text("Maintenance request completed"),
+                          subtitle: Text("Yesterday"),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 40),
+                ],
+              ),
+            ),
           ),
         ],
       ),

@@ -19,6 +19,10 @@ class Building {
   final bool verified;
 
   final DateTime createdAt;
+  final int totalUnits;
+  final int occupiedUnits;
+  final int vacantUnits;
+  final double monthlyRevenue;
 
   Building({
     required this.id,
