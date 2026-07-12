@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../core/constants/firestore_collections.dart';
 import '../models/building.dart';
 
 class BuildingService {
@@ -7,35 +8,37 @@ class BuildingService {
 
   Stream<List<Building>> getBuildings() {
     return _firestore
-        .collection('buildings')
+        .collection(FirestoreCollections.buildings)
         .snapshots()
-        .map((snapshot) {
-      return snapshot.docs.map((doc) {
-        return Building.fromMap(
+        .map(
+          (snapshot) => snapshot.docs
+          .map(
+            (doc) => Building.fromMap(
           doc.id,
           doc.data(),
-        );
-      }).toList();
-    });
+        ),
+      )
+          .toList(),
+    );
   }
 
   Future<void> addBuilding(Building building) async {
     await _firestore
-        .collection('buildings')
+        .collection(FirestoreCollections.buildings)
         .doc(building.id)
         .set(building.toMap());
   }
 
   Future<void> updateBuilding(Building building) async {
     await _firestore
-        .collection('buildings')
+        .collection(FirestoreCollections.buildings)
         .doc(building.id)
         .update(building.toMap());
   }
 
   Future<void> deleteBuilding(String id) async {
     await _firestore
-        .collection('buildings')
+        .collection(FirestoreCollections.buildings)
         .doc(id)
         .delete();
   }

@@ -1,220 +1,187 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../core/constants/firestore_collections.dart';
 import '../models/unit.dart';
 import '../models/unit_status.dart';
 
 class UnitService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  final String collection = "units";
+  CollectionReference<Map<String, dynamic>> get _units =>
+      _firestore.collection(FirestoreCollections.units);
 
-  /// ===============================
-  /// Add Unit
-  /// ===============================
+  // ===============================
+  // Add Unit
+  // ===============================
 
   Future<void> addUnit(Unit unit) async {
-    await _firestore
-        .collection(collection)
-        .doc(unit.id)
-        .set(unit.toMap());
+    await _units.doc(unit.id).set(unit.toMap());
   }
 
-  /// ===============================
-  /// Update Unit
-  /// ===============================
+  // ===============================
+  // Update Unit
+  // ===============================
 
   Future<void> updateUnit(Unit unit) async {
-    await _firestore
-        .collection(collection)
-        .doc(unit.id)
-        .update(unit.toMap());
+    await _units.doc(unit.id).update(unit.toMap());
   }
 
-  /// ===============================
-  /// Delete Unit
-  /// ===============================
+  // ===============================
+  // Delete Unit
+  // ===============================
 
   Future<void> deleteUnit(String id) async {
-    await _firestore
-        .collection(collection)
-        .doc(id)
-        .delete();
+    await _units.doc(id).delete();
   }
 
-  /// ===============================
-  /// Get All Units
-  /// ===============================
+  // ===============================
+  // All Units
+  // ===============================
 
   Stream<List<Unit>> getUnits() {
-    return _firestore
-        .collection(collection)
-        .snapshots()
-        .map((snapshot) {
-      return snapshot.docs
+    return _units.snapshots().map(
+          (snapshot) => snapshot.docs
           .map(
             (doc) => Unit.fromMap(
           doc.id,
           doc.data(),
         ),
       )
-          .toList();
-    });
+          .toList(),
+    );
   }
 
-  /// ===============================
-  /// Units For One Building
-  /// ===============================
+  // ===============================
+  // Units For One Building
+  // ===============================
 
-  Stream<List<Unit>> getBuildingUnits(
-      String buildingId,
-      ) {
-    return _firestore
-        .collection(collection)
+  Stream<List<Unit>> getBuildingUnits(String buildingId) {
+    return _units
         .where(
-      "buildingId",
+      'buildingId',
       isEqualTo: buildingId,
     )
         .snapshots()
-        .map((snapshot) {
-      return snapshot.docs
+        .map(
+          (snapshot) => snapshot.docs
           .map(
             (doc) => Unit.fromMap(
           doc.id,
           doc.data(),
         ),
       )
-          .toList();
-    });
+          .toList(),
+    );
   }
 
-  /// ===============================
-  /// Vacant Units
-  /// ===============================
+  // ===============================
+  // Vacant Units
+  // ===============================
 
-  Stream<List<Unit>> getVacantUnits(
-      String buildingId,
-      ) {
-    return _firestore
-        .collection(collection)
+  Stream<List<Unit>> getVacantUnits(String buildingId) {
+    return _units
         .where(
-      "buildingId",
+      'buildingId',
       isEqualTo: buildingId,
     )
         .where(
-      "status",
+      'status',
       isEqualTo: UnitStatus.vacant.name,
     )
         .snapshots()
-        .map((snapshot) {
-      return snapshot.docs
+        .map(
+          (snapshot) => snapshot.docs
           .map(
             (doc) => Unit.fromMap(
           doc.id,
           doc.data(),
         ),
       )
-          .toList();
-    });
+          .toList(),
+    );
   }
 
-  /// ===============================
-  /// Occupied Units
-  /// ===============================
+  // ===============================
+  // Occupied Units
+  // ===============================
 
-  Stream<List<Unit>> getOccupiedUnits(
-      String buildingId,
-      ) {
-    return _firestore
-        .collection(collection)
+  Stream<List<Unit>> getOccupiedUnits(String buildingId) {
+    return _units
         .where(
-      "buildingId",
+      'buildingId',
       isEqualTo: buildingId,
     )
         .where(
-      "status",
+      'status',
       isEqualTo: UnitStatus.occupied.name,
     )
         .snapshots()
-        .map((snapshot) {
-      return snapshot.docs
+        .map(
+          (snapshot) => snapshot.docs
           .map(
             (doc) => Unit.fromMap(
           doc.id,
           doc.data(),
         ),
       )
-          .toList();
-    });
+          .toList(),
+    );
   }
 
-  /// ===============================
-  /// Occupancy %
-  /// ===============================
+  // ===============================
+  // Occupancy %
+  // ===============================
 
-  Future<double> getOccupancyRate(
-      String buildingId,
-      ) async {
-    final snapshot = await _firestore
-        .collection(collection)
+  Future<double> getOccupancyRate(String buildingId) async {
+    final snapshot = await _units
         .where(
-      "buildingId",
+      'buildingId',
       isEqualTo: buildingId,
     )
         .get();
 
-    if (snapshot.docs.isEmpty) {
-      return 0;
-    }
+    if (snapshot.docs.isEmpty) return 0;
 
-    int occupied = snapshot.docs.where((doc) {
-      return doc["status"] ==
-          UnitStatus.occupied.name;
-    }).length;
+    final occupied = snapshot.docs.where(
+          (doc) => doc.data()['status'] == UnitStatus.occupied.name,
+    );
 
-    return (occupied / snapshot.docs.length) * 100;
+    return (occupied.length / snapshot.docs.length) * 100;
   }
 
-  /// ===============================
-  /// Monthly Revenue
-  /// ===============================
+  // ===============================
+  // Monthly Revenue
+  // ===============================
 
-  Future<double> getMonthlyRevenue(
-      String buildingId,
-      ) async {
-    final snapshot = await _firestore
-        .collection(collection)
+  Future<double> getMonthlyRevenue(String buildingId) async {
+    final snapshot = await _units
         .where(
-      "buildingId",
+      'buildingId',
       isEqualTo: buildingId,
     )
         .get();
 
     double revenue = 0;
 
-    for (var doc in snapshot.docs) {
-      revenue +=
-          (doc["monthlyRent"] ?? 0)
-              .toDouble();
+    for (final doc in snapshot.docs) {
+      revenue += (doc.data()['monthlyRent'] ?? 0).toDouble();
     }
 
     return revenue;
   }
 
-  /// ===============================
-  /// Vacant Count
-  /// ===============================
+  // ===============================
+  // Vacant Count
+  // ===============================
 
-  Future<int> getVacantCount(
-      String buildingId,
-      ) async {
-    final snapshot = await _firestore
-        .collection(collection)
+  Future<int> getVacantCount(String buildingId) async {
+    final snapshot = await _units
         .where(
-      "buildingId",
+      'buildingId',
       isEqualTo: buildingId,
     )
         .where(
-      "status",
+      'status',
       isEqualTo: UnitStatus.vacant.name,
     )
         .get();
@@ -222,21 +189,18 @@ class UnitService {
     return snapshot.docs.length;
   }
 
-  /// ===============================
-  /// Occupied Count
-  /// ===============================
+  // ===============================
+  // Occupied Count
+  // ===============================
 
-  Future<int> getOccupiedCount(
-      String buildingId,
-      ) async {
-    final snapshot = await _firestore
-        .collection(collection)
+  Future<int> getOccupiedCount(String buildingId) async {
+    final snapshot = await _units
         .where(
-      "buildingId",
+      'buildingId',
       isEqualTo: buildingId,
     )
         .where(
-      "status",
+      'status',
       isEqualTo: UnitStatus.occupied.name,
     )
         .get();
@@ -244,17 +208,14 @@ class UnitService {
     return snapshot.docs.length;
   }
 
-  /// ===============================
-  /// Total Units
-  /// ===============================
+  // ===============================
+  // Total Units
+  // ===============================
 
-  Future<int> getTotalUnits(
-      String buildingId,
-      ) async {
-    final snapshot = await _firestore
-        .collection(collection)
+  Future<int> getTotalUnits(String buildingId) async {
+    final snapshot = await _units
         .where(
-      "buildingId",
+      'buildingId',
       isEqualTo: buildingId,
     )
         .get();

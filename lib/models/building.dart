@@ -19,6 +19,8 @@ class Building {
   final bool verified;
 
   final DateTime createdAt;
+
+  // Statistics
   final int totalUnits;
   final int occupiedUnits;
   final int vacantUnits;
@@ -38,6 +40,10 @@ class Building {
     required this.images,
     required this.verified,
     required this.createdAt,
+    required this.totalUnits,
+    required this.occupiedUnits,
+    required this.vacantUnits,
+    required this.monthlyRevenue,
   });
 
   factory Building.fromMap(
@@ -61,6 +67,10 @@ class Building {
         map['createdAt'] ?? '',
       ) ??
           DateTime.now(),
+      totalUnits: map['totalUnits'] ?? 0,
+      occupiedUnits: map['occupiedUnits'] ?? 0,
+      vacantUnits: map['vacantUnits'] ?? 0,
+      monthlyRevenue: (map['monthlyRevenue'] ?? 0).toDouble(),
     );
   }
 
@@ -78,6 +88,50 @@ class Building {
       'images': images,
       'verified': verified,
       'createdAt': createdAt.toIso8601String(),
+      'totalUnits': totalUnits,
+      'occupiedUnits': occupiedUnits,
+      'vacantUnits': vacantUnits,
+      'monthlyRevenue': monthlyRevenue,
     };
+  }
+
+  Building copyWith({
+    String? id,
+    String? buildingCode,
+    String? name,
+    String? county,
+    String? town,
+    String? estate,
+    String? address,
+    double? latitude,
+    double? longitude,
+    String? ownerId,
+    List<String>? images,
+    bool? verified,
+    DateTime? createdAt,
+    int? totalUnits,
+    int? occupiedUnits,
+    int? vacantUnits,
+    double? monthlyRevenue,
+  }) {
+    return Building(
+      id: id ?? this.id,
+      buildingCode: buildingCode ?? this.buildingCode,
+      name: name ?? this.name,
+      county: county ?? this.county,
+      town: town ?? this.town,
+      estate: estate ?? this.estate,
+      address: address ?? this.address,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
+      ownerId: ownerId ?? this.ownerId,
+      images: images ?? this.images,
+      verified: verified ?? this.verified,
+      createdAt: createdAt ?? this.createdAt,
+      totalUnits: totalUnits ?? this.totalUnits,
+      occupiedUnits: occupiedUnits ?? this.occupiedUnits,
+      vacantUnits: vacantUnits ?? this.vacantUnits,
+      monthlyRevenue: monthlyRevenue ?? this.monthlyRevenue,
+    );
   }
 }
