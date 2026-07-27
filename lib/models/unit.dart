@@ -4,6 +4,8 @@ class Unit {
   final String id;
   final String buildingId;
 
+  final String organizationId;
+
   final String unitNumber;
 
   final int floor;
@@ -49,6 +51,7 @@ class Unit {
   const Unit({
     required this.id,
     required this.buildingId,
+    required this.organizationId,
     required this.unitNumber,
     required this.floor,
     required this.bedrooms,
@@ -79,6 +82,7 @@ class Unit {
     return Unit(
       id: id,
       buildingId: map['buildingId'] ?? '',
+      organizationId: map['organizationId'] ?? '',
       unitNumber: map['unitNumber'] ?? '',
       floor: map['floor'] ?? 0,
       bedrooms: map['bedrooms'] ?? 0,
@@ -112,6 +116,7 @@ class Unit {
   Map<String, dynamic> toMap() {
     return {
       'buildingId': buildingId,
+      'organizationId': organizationId,
       'unitNumber': unitNumber,
       'floor': floor,
       'bedrooms': bedrooms,

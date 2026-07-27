@@ -38,7 +38,7 @@ class DashboardScreen extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => const TenantsScreen(),
+                    builder: (_) => TenantsScreen(),
                   ),
                 );
               },
@@ -50,7 +50,7 @@ class DashboardScreen extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => const PaymentsScreen(),
+                    builder: (_) => PaymentsScreen(),
                   ),
                 );
               },

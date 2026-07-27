@@ -1,32 +1,22 @@
 import 'package:flutter/material.dart';
 
 import '../models/building.dart';
+import '../screens/add_building_screen.dart';
+import '../screens/unit_screen.dart';
 import '../services/building_service.dart';
-import 'add_building_screen.dart';
-import 'building_details_screen.dart';
 
-class BuildingsScreen extends StatefulWidget {
-  const BuildingsScreen({super.key});
+class BuildingsScreen extends StatelessWidget {
+  BuildingsScreen({super.key});
 
-  @override
-  State<BuildingsScreen> createState() => _BuildingsScreenState();
-}
-
-class _BuildingsScreenState extends State<BuildingsScreen> {
   final BuildingService _service = BuildingService();
-
-  String search = "";
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("My Buildings"),
+        title: const Text("Buildings"),
       ),
-
       floatingActionButton: FloatingActionButton.extended(
-        icon: const Icon(Icons.add),
-        label: const Text("Building"),
         onPressed: () {
           Navigator.push(
             context,
@@ -35,231 +25,180 @@ class _BuildingsScreenState extends State<BuildingsScreen> {
             ),
           );
         },
+        icon: const Icon(Icons.add),
+        label: const Text("Building"),
       ),
+      body: StreamBuilder<List<Building>>(
+        stream: _service.getBuildings(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
 
-      body: Column(
-        children: [
+          if (snapshot.hasError) {
+            return Center(
+              child: Text(snapshot.error.toString()),
+            );
+          }
 
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: TextField(
-              decoration: InputDecoration(
-                hintText: "Search buildings...",
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
+          final buildings = snapshot.data ?? [];
+
+          if (buildings.isEmpty) {
+            return const Center(
+              child: Text(
+                "No buildings found",
+                style: TextStyle(fontSize: 18),
+              ),
+            );
+          }
+
+          return ListView.builder(
+            padding: const EdgeInsets.all(12),
+            itemCount: buildings.length,
+            itemBuilder: (context, index) {
+              final building = buildings[index];
+
+              return Card(
+                elevation: 3,
+                margin: const EdgeInsets.only(bottom: 15),
+                shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
                 ),
-              ),
-              onChanged: (value) {
-                setState(() {
-                  search = value.toLowerCase();
-                });
-              },
-            ),
-          ),
-
-          Expanded(
-            child: StreamBuilder<List<Building>>(
-              stream: _service.getBuildings(),
-              builder: (context, snapshot) {
-
-                if (snapshot.connectionState ==
-                    ConnectionState.waiting) {
-                  return const Center(
-                    child: CircularProgressIndicator(),
-                  );
-                }
-
-                if (snapshot.hasError) {
-                  return Center(
-                    child: Text(
-                      snapshot.error.toString(),
-                    ),
-                  );
-                }
-
-                List<Building> buildings =
-                    snapshot.data ?? [];
-
-                buildings = buildings.where((building) {
-
-                  return building.name
-                      .toLowerCase()
-                      .contains(search) ||
-                      building.estate
-                          .toLowerCase()
-                          .contains(search) ||
-                      building.town
-                          .toLowerCase()
-                          .contains(search);
-
-                }).toList();
-
-                if (buildings.isEmpty) {
-                  return const Center(
-                    child: Column(
-                      mainAxisAlignment:
-                      MainAxisAlignment.center,
-                      children: [
-
-                        Icon(
-                          Icons.apartment,
-                          size: 80,
-                          color: Colors.grey,
-                        ),
-
-                        SizedBox(height: 20),
-
-                        Text(
-                          "No Buildings Found",
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-
-                        SizedBox(height: 8),
-
-                        Text(
-                          "Tap + to register your first building.",
-                        )
-                      ],
-                    ),
-                  );
-                }
-
-                return ListView.builder(
-                  padding: const EdgeInsets.only(
-                    left: 16,
-                    right: 16,
-                    bottom: 100,
-                  ),
-                  itemCount: buildings.length,
-                  itemBuilder: (_, index) {
-
-                    final building = buildings[index];
-
-                    return Card(
-                      margin:
-                      const EdgeInsets.only(bottom: 16),
-
-                      shape: RoundedRectangleBorder(
-                        borderRadius:
-                        BorderRadius.circular(18),
-                      ),
-
-                      child: InkWell(
-                        borderRadius:
-                        BorderRadius.circular(18),
-
-                        onTap: () {
-
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) =>
-                              const BuildingDetailsScreen(),
-                            ),
-                          );
-
-                        },
-
-                        child: Padding(
-                          padding:
-                          const EdgeInsets.all(18),
-
-                          child: Column(
-                            crossAxisAlignment:
-                            CrossAxisAlignment.start,
-
-                            children: [
-
-                              Row(
-                                children: [
-
-                                  CircleAvatar(
-                                    radius: 28,
-                                    backgroundColor:
-                                    Colors.indigo.shade100,
-
-                                    child: const Icon(
-                                      Icons.apartment,
-                                      size: 30,
-                                    ),
-                                  ),
-
-                                  const SizedBox(width: 16),
-
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                      CrossAxisAlignment
-                                          .start,
-
-                                      children: [
-
-                                        Text(
-                                          building.name,
-                                          style:
-                                          const TextStyle(
-                                            fontWeight:
-                                            FontWeight.bold,
-                                            fontSize: 20,
-                                          ),
-                                        ),
-
-                                        const SizedBox(
-                                            height: 5),
-
-                                        Text(
-                                          "${building.estate}, ${building.town}",
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-
-                                  if (building.verified)
-                                    const Icon(
-                                      Icons.verified,
-                                      color: Colors.green,
-                                    ),
-                                ],
-                              ),
-
-                              const SizedBox(height: 18),
-
-                              Row(
-                                children: [
-
-                                  Chip(
-                                    avatar: const Icon(
-                                      Icons.qr_code,
-                                      size: 18,
-                                    ),
-                                    label: Text(
-                                      building.buildingCode,
-                                    ),
-                                  ),
-
-                                  const Spacer(),
-
-                                  Text(
-                                    building.county,
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(14),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => UnitScreen(
+                          building: building,
                         ),
                       ),
                     );
                   },
-                );
-              },
-            ),
-          ),
-        ],
+                  child: Padding(
+                    padding: const EdgeInsets.all(18),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const CircleAvatar(
+                              radius: 25,
+                              child: Icon(Icons.apartment),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment:
+                                CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    building.name,
+                                    style: const TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    "${building.estate}, ${building.town}",
+                                    style: const TextStyle(
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            PopupMenuButton<String>(
+                              onSelected: (value) async {
+                                if (value == "delete") {
+                                  await _service.deleteBuilding(building.id);
+                                }
+                              },
+                              itemBuilder: (_) => const [
+                                PopupMenuItem(
+                                  value: "delete",
+                                  child: Text("Delete"),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 18),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _stat(
+                                "Units",
+                                building.totalUnits.toString(),
+                                Colors.blue,
+                              ),
+                            ),
+                            Expanded(
+                              child: _stat(
+                                "Occupied",
+                                building.occupiedUnits.toString(),
+                                Colors.green,
+                              ),
+                            ),
+                            Expanded(
+                              child: _stat(
+                                "Vacant",
+                                building.vacantUnits.toString(),
+                                Colors.orange,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 18),
+                        Text(
+                          "Monthly Revenue",
+                          style: TextStyle(
+                            color: Colors.grey.shade700,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          "KES ${building.monthlyRevenue.toStringAsFixed(0)}",
+                          style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.green,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          );
+        },
       ),
+    );
+  }
+
+  Widget _stat(
+      String title,
+      String value,
+      Color color,
+      ) {
+    return Column(
+      children: [
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 22,
+            color: color,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(title),
+      ],
     );
   }
 }

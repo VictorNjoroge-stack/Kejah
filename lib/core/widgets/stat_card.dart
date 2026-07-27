@@ -31,9 +31,8 @@ class StatCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-
               CircleAvatar(
-                backgroundColor: color.withOpacity(.15),
+                backgroundColor: color.withValues(alpha: 0.15),
                 child: Icon(
                   icon,
                   color: color,

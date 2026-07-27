@@ -14,4 +14,6 @@ class FirestoreCollections {
   static const users = 'users';
 
   static const notifications = 'notifications';
+
+  static const organizations = 'organizations';
 }

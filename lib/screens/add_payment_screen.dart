@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../data/payment_data.dart';
 import '../data/tenant_data.dart';
 
@@ -10,9 +11,15 @@ class AddPaymentScreen extends StatefulWidget {
 }
 
 class _AddPaymentScreenState extends State<AddPaymentScreen> {
-  final amountController = TextEditingController();
+  final TextEditingController amountController = TextEditingController();
 
   String? selectedTenant;
+
+  @override
+  void dispose() {
+    amountController.dispose();
+    super.dispose();
+  }
 
   void savePayment() {
     if (selectedTenant == null || amountController.text.isEmpty) return;
@@ -33,17 +40,22 @@ class _AddPaymentScreenState extends State<AddPaymentScreen> {
     final tenants = TenantData.tenants;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Add Payment')),
+      appBar: AppBar(
+        title: const Text("Add Payment"),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            DropdownButtonFormField(
-              value: selectedTenant,
+            DropdownButtonFormField<String>(
+              initialValue: selectedTenant,
+              decoration: const InputDecoration(
+                labelText: "Select Tenant",
+              ),
               items: tenants.map<DropdownMenuItem<String>>((t) {
-                return DropdownMenuItem(
-                  value: t['name'],
-                  child: Text(t['name']),
+                return DropdownMenuItem<String>(
+                  value: t["name"] as String,
+                  child: Text(t["name"] as String),
                 );
               }).toList(),
               onChanged: (value) {
@@ -51,9 +63,6 @@ class _AddPaymentScreenState extends State<AddPaymentScreen> {
                   selectedTenant = value;
                 });
               },
-              decoration: const InputDecoration(
-                labelText: 'Select Tenant',
-              ),
             ),
 
             const SizedBox(height: 16),
@@ -62,7 +71,7 @@ class _AddPaymentScreenState extends State<AddPaymentScreen> {
               controller: amountController,
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(
-                labelText: 'Amount Paid',
+                labelText: "Amount Paid",
               ),
             ),
 
@@ -72,7 +81,7 @@ class _AddPaymentScreenState extends State<AddPaymentScreen> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: savePayment,
-                child: const Text('Save Payment'),
+                child: const Text("Save Payment"),
               ),
             ),
           ],

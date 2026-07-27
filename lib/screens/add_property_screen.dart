@@ -23,7 +23,7 @@ class _AddPropertyScreenState extends State<AddPropertyScreen> {
   String _propertyType = "Apartment";
   int _bedrooms = 1;
 
-  final List<String> _types = [
+  final List<String> _types = const [
     "Apartment",
     "Bedsitter",
     "Studio",
@@ -34,6 +34,14 @@ class _AddPropertyScreenState extends State<AddPropertyScreen> {
     "Maisonette",
     "Standalone House",
   ];
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _locationController.dispose();
+    _priceController.dispose();
+    super.dispose();
+  }
 
   Future<void> _saveProperty() async {
     if (!_formKey.currentState!.validate()) return;
@@ -65,14 +73,6 @@ class _AddPropertyScreenState extends State<AddPropertyScreen> {
     );
 
     Navigator.pop(context);
-  }
-
-  @override
-  void dispose() {
-    _titleController.dispose();
-    _locationController.dispose();
-    _priceController.dispose();
-    super.dispose();
   }
 
   InputDecoration inputDecoration(
@@ -155,20 +155,23 @@ class _AddPropertyScreenState extends State<AddPropertyScreen> {
               const SizedBox(height: 20),
 
               DropdownButtonFormField<String>(
-                value: _propertyType,
+                initialValue: _propertyType,
                 decoration: inputDecoration(
                   "Property Type",
                   Icons.apartment,
                 ),
-                items: _types.map((type) {
-                  return DropdownMenuItem(
+                items: _types
+                    .map(
+                      (type) => DropdownMenuItem<String>(
                     value: type,
                     child: Text(type),
-                  );
-                }).toList(),
+                  ),
+                )
+                    .toList(),
                 onChanged: (value) {
+                  if (value == null) return;
                   setState(() {
-                    _propertyType = value!;
+                    _propertyType = value;
                   });
                 },
               ),
@@ -176,20 +179,22 @@ class _AddPropertyScreenState extends State<AddPropertyScreen> {
               const SizedBox(height: 20),
 
               DropdownButtonFormField<int>(
-                value: _bedrooms,
+                initialValue: _bedrooms,
                 decoration: inputDecoration(
                   "Bedrooms",
                   Icons.bed,
                 ),
-                items: List.generate(10, (index) {
-                  return DropdownMenuItem(
+                items: List.generate(
+                  10,
+                      (index) => DropdownMenuItem<int>(
                     value: index + 1,
                     child: Text("${index + 1}"),
-                  );
-                }),
+                  ),
+                ),
                 onChanged: (value) {
+                  if (value == null) return;
                   setState(() {
-                    _bedrooms = value!;
+                    _bedrooms = value;
                   });
                 },
               ),
@@ -204,7 +209,9 @@ class _AddPropertyScreenState extends State<AddPropertyScreen> {
                   icon: const Icon(Icons.save),
                   label: const Text(
                     "Save Property",
-                    style: TextStyle(fontSize: 18),
+                    style: TextStyle(
+                      fontSize: 18,
+                    ),
                   ),
                 ),
               ),

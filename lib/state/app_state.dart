@@ -1,173 +1,134 @@
+import 'package:flutter/foundation.dart';
+
 import '../models/building.dart';
-import '../models/house.dart';
-import '../models/house_status.dart';
-import '../models/tenant.dart';
+import '../models/unit.dart';
 import '../models/payment.dart';
+import '../models/tenant.dart';
 import '../models/vacate_notice.dart';
 import '../models/eviction_notice.dart';
 
-class AppState {
-  AppState._internal();
+class AppState extends ChangeNotifier {
+  AppState._();
 
-  static final AppState instance = AppState._internal();
+  static final AppState instance = AppState._();
 
-  // =========================
-  // CORE DATA
-  // =========================
   final List<Building> buildings = [];
-  final List<House> houses = [];
+  final List<Unit> units = [];
   final List<Tenant> tenants = [];
   final List<Payment> payments = [];
 
   final List<VacateNotice> vacateNotices = [];
   final List<EvictionNotice> evictionNotices = [];
 
-  // =========================
+  void initialize() {}
+
+  // =====================================================
   // BUILDINGS
-  // =========================
-  void addBuilding(Building b) {
-    buildings.add(b);
+  // =====================================================
+
+  void addBuilding(Building building) {
+    buildings.add(building);
+    notifyListeners();
   }
 
-  // =========================
-  // HOUSES
-  // =========================
-  void addHouse(House h) {
-    houses.add(h);
+  // =====================================================
+  // UNITS
+  // =====================================================
+
+  void addUnit(Unit unit) {
+    units.add(unit);
+    notifyListeners();
   }
 
-  List<House> housesByBuilding(String buildingId) {
-    return houses.where((h) => h.buildingId == buildingId).toList();
+  List<Unit> unitsByBuilding(String buildingId) {
+    return units.where((u) => u.buildingId == buildingId).toList();
   }
 
-  House? getHouse(String id) {
+  Unit? getUnit(String unitId) {
     try {
-      return houses.firstWhere((h) => h.id == id);
+      return units.firstWhere((u) => u.id == unitId);
     } catch (_) {
       return null;
     }
   }
 
-  void markOccupied(String houseId) {
-    final h = getHouse(houseId);
-    if (h != null) {
-      h.status = HouseStatus.occupied;
-    }
-  }
-
-  void markVacant(String houseId) {
-    final h = getHouse(houseId);
-    if (h != null) {
-      h.status = HouseStatus.vacant;
-    }
-  }
-
-  // =========================
+  // =====================================================
   // TENANTS
-  // =========================
-  void addTenant(Tenant t) {
-    tenants.add(t);
+  // =====================================================
 
-    final h = getHouse(t.houseId);
-    if (h != null) {
-      h.status = HouseStatus.occupied;
-    }
+  void addTenant(Tenant tenant) {
+    tenants.add(tenant);
+    notifyListeners();
   }
 
-  Tenant? getTenantByHouse(String houseId) {
+  Tenant? getTenantByUnit(String unitId) {
     try {
-      return tenants.firstWhere((t) => t.houseId == houseId);
+      return tenants.firstWhere((t) => t.unitId == unitId);
     } catch (_) {
       return null;
     }
   }
 
-  // =========================
+  // =====================================================
   // PAYMENTS
-  // =========================
-  void addPayment(Payment p) {
-    payments.add(p);
+  // =====================================================
 
-    final h = getHouse(p.houseId);
-    if (h != null) {
-      h.lastPaymentDate = DateTime.now();
-      h.status = HouseStatus.occupied;
-    }
+  void addPayment(Payment payment) {
+    payments.add(payment);
+    notifyListeners();
   }
 
-  double totalPaid(String houseId) {
+  double totalPaid(String unitId) {
     return payments
-        .where((p) => p.houseId == houseId)
-        .fold(0.0, (a, b) => a + b.amount);
+        .where((p) => p.unitId == unitId)
+        .fold(0.0, (sum, p) => sum + p.amount);
   }
 
-  // =========================
-  // ANALYTICS
-  // =========================
-  double totalRentExpected() {
-    return houses.fold(0.0, (a, b) => a + b.monthlyRent);
+  // =====================================================
+  // VACATE NOTICES
+  // =====================================================
+
+  void addVacateNotice(VacateNotice notice) {
+    vacateNotices.add(notice);
+    notifyListeners();
   }
+
+  void applyVacateNotice(VacateNotice notice) {
+    notifyListeners();
+  }
+
+  // =====================================================
+  // EVICTION NOTICES
+  // =====================================================
+
+  void addEvictionNotice(EvictionNotice notice) {
+    evictionNotices.add(notice);
+    notifyListeners();
+  }
+
+  void applyEvictionNotice(EvictionNotice notice) {
+    notifyListeners();
+  }
+
+  // =====================================================
+  // ANALYTICS
+  // =====================================================
 
   double totalCollected() {
-    return payments.fold(0.0, (a, b) => a + b.amount);
+    return payments.fold(
+      0.0,
+          (sum, p) => sum + p.amount,
+    );
+  }
+
+  double totalRentExpected() {
+    return tenants.fold(
+      0.0,
+          (sum, t) => sum + t.rent,
+    );
   }
 
   double totalArrears() {
     return totalRentExpected() - totalCollected();
-  }
-
-  // =========================
-  // LIFECYCLE ENGINE
-  // =========================
-  void runLifecycleCheck() {
-    final now = DateTime.now();
-
-    for (final h in houses) {
-      final paid = totalPaid(h.id);
-
-      if (h.status == HouseStatus.occupied &&
-          paid < h.monthlyRent) {
-        h.status = HouseStatus.arrears;
-      }
-
-      if (h.status == HouseStatus.arrears &&
-          h.lastPaymentDate != null &&
-          now.difference(h.lastPaymentDate!).inDays > 7) {
-        h.status = HouseStatus.vacatingSoon;
-      }
-
-      if (h.status == HouseStatus.vacatingSoon &&
-          h.vacateNoticeDate != null &&
-          now.difference(h.vacateNoticeDate!).inDays > 14) {
-        h.status = HouseStatus.evictionPending;
-      }
-    }
-  }
-
-  // =========================
-  // NOTICES (FULLY FIXED)
-  // =========================
-
-  void addVacateNotice(VacateNotice n) {
-    vacateNotices.add(n);
-  }
-
-  void applyVacateNotice(VacateNotice n) {
-    final h = getHouse(n.houseId);
-    if (h != null) {
-      h.status = HouseStatus.vacatingSoon;
-      h.vacateNoticeDate = n.date;
-    }
-  }
-
-  void addEvictionNotice(EvictionNotice n) {
-    evictionNotices.add(n);
-  }
-
-  void applyEvictionNotice(EvictionNotice n) {
-    final h = getHouse(n.houseId);
-    if (h != null) {
-      h.status = HouseStatus.evictionPending;
-    }
   }
 }

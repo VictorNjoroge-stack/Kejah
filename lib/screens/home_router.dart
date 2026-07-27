@@ -55,7 +55,7 @@ if (!profileCompleted) {
 return const OnboardingScreen();
 }
 
-return const BuildingsScreen();
+return BuildingsScreen();
 },
 );
 }

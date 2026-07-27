@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../core/constants/firestore_collections.dart';
 import '../models/unit.dart';
 import '../models/unit_status.dart';
+import 'session_service.dart';
 
 class UnitService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -10,216 +11,205 @@ class UnitService {
   CollectionReference<Map<String, dynamic>> get _units =>
       _firestore.collection(FirestoreCollections.units);
 
-  // ===============================
-  // Add Unit
-  // ===============================
+  String get _organizationId {
+    final id = SessionService.instance.organizationId;
+
+    if (id == null || id.isEmpty) {
+      throw Exception('No organization is currently selected.');
+    }
+
+    return id;
+  }
+
+  // =====================================================
+  // STREAMS
+  // =====================================================
+
+  Stream<List<Unit>> getUnits() {
+    return _units
+        .where('organizationId', isEqualTo: _organizationId)
+        .snapshots()
+        .map(
+          (snapshot) => snapshot.docs
+          .map(
+            (doc) => Unit.fromMap(
+          doc.id,
+          doc.data(),
+        ),
+      )
+          .toList(),
+    );
+  }
+
+  Stream<List<Unit>> getBuildingUnits(String buildingId) {
+    return _units
+        .where('organizationId', isEqualTo: _organizationId)
+        .where('buildingId', isEqualTo: buildingId)
+        .snapshots()
+        .map(
+          (snapshot) => snapshot.docs
+          .map(
+            (doc) => Unit.fromMap(
+          doc.id,
+          doc.data(),
+        ),
+      )
+          .toList(),
+    );
+  }
+
+  // =====================================================
+  // CRUD
+  // =====================================================
 
   Future<void> addUnit(Unit unit) async {
     await _units.doc(unit.id).set(unit.toMap());
   }
 
-  // ===============================
-  // Update Unit
-  // ===============================
-
   Future<void> updateUnit(Unit unit) async {
     await _units.doc(unit.id).update(unit.toMap());
   }
-
-  // ===============================
-  // Delete Unit
-  // ===============================
 
   Future<void> deleteUnit(String id) async {
     await _units.doc(id).delete();
   }
 
-  // ===============================
-  // All Units
-  // ===============================
+  // =====================================================
+  // TENANT
+  // =====================================================
 
-  Stream<List<Unit>> getUnits() {
-    return _units.snapshots().map(
-          (snapshot) => snapshot.docs
-          .map(
-            (doc) => Unit.fromMap(
-          doc.id,
-          doc.data(),
-        ),
-      )
-          .toList(),
-    );
+  Future<void> assignTenant({
+    required String unitId,
+    required String tenantId,
+  }) async {
+    await _units.doc(unitId).update({
+      'tenantId': tenantId,
+      'status': UnitStatus.occupied.name,
+    });
   }
 
-  // ===============================
-  // Units For One Building
-  // ===============================
-
-  Stream<List<Unit>> getBuildingUnits(String buildingId) {
-    return _units
-        .where(
-      'buildingId',
-      isEqualTo: buildingId,
-    )
-        .snapshots()
-        .map(
-          (snapshot) => snapshot.docs
-          .map(
-            (doc) => Unit.fromMap(
-          doc.id,
-          doc.data(),
-        ),
-      )
-          .toList(),
-    );
+  Future<void> vacateUnit(String unitId) async {
+    await _units.doc(unitId).update({
+      'tenantId': '',
+      'status': UnitStatus.vacant.name,
+    });
   }
 
-  // ===============================
-  // Vacant Units
-  // ===============================
+  // =====================================================
+  // COUNTS
+  // =====================================================
 
-  Stream<List<Unit>> getVacantUnits(String buildingId) {
-    return _units
-        .where(
-      'buildingId',
-      isEqualTo: buildingId,
-    )
-        .where(
-      'status',
-      isEqualTo: UnitStatus.vacant.name,
-    )
-        .snapshots()
-        .map(
-          (snapshot) => snapshot.docs
-          .map(
-            (doc) => Unit.fromMap(
-          doc.id,
-          doc.data(),
-        ),
-      )
-          .toList(),
-    );
-  }
-
-  // ===============================
-  // Occupied Units
-  // ===============================
-
-  Stream<List<Unit>> getOccupiedUnits(String buildingId) {
-    return _units
-        .where(
-      'buildingId',
-      isEqualTo: buildingId,
-    )
-        .where(
-      'status',
-      isEqualTo: UnitStatus.occupied.name,
-    )
-        .snapshots()
-        .map(
-          (snapshot) => snapshot.docs
-          .map(
-            (doc) => Unit.fromMap(
-          doc.id,
-          doc.data(),
-        ),
-      )
-          .toList(),
-    );
-  }
-
-  // ===============================
-  // Occupancy %
-  // ===============================
-
-  Future<double> getOccupancyRate(String buildingId) async {
+  Future<int> getTotalUnits() async {
     final snapshot = await _units
-        .where(
-      'buildingId',
-      isEqualTo: buildingId,
-    )
+        .where('organizationId', isEqualTo: _organizationId)
         .get();
 
-    if (snapshot.docs.isEmpty) return 0;
-
-    final occupied = snapshot.docs.where(
-          (doc) => doc.data()['status'] == UnitStatus.occupied.name,
-    );
-
-    return (occupied.length / snapshot.docs.length) * 100;
+    return snapshot.docs.length;
   }
 
-  // ===============================
-  // Monthly Revenue
-  // ===============================
-
-  Future<double> getMonthlyRevenue(String buildingId) async {
+  Future<int> getOccupiedCount() async {
     final snapshot = await _units
-        .where(
-      'buildingId',
-      isEqualTo: buildingId,
-    )
+        .where('organizationId', isEqualTo: _organizationId)
+        .where('status', isEqualTo: UnitStatus.occupied.name)
         .get();
 
-    double revenue = 0;
+    return snapshot.docs.length;
+  }
+
+  Future<int> getVacantCount() async {
+    final snapshot = await _units
+        .where('organizationId', isEqualTo: _organizationId)
+        .where('status', isEqualTo: UnitStatus.vacant.name)
+        .get();
+
+    return snapshot.docs.length;
+  }
+
+  Future<int> getBuildingTotalUnits(String buildingId) async {
+    final snapshot = await _units
+        .where('organizationId', isEqualTo: _organizationId)
+        .where('buildingId', isEqualTo: buildingId)
+        .get();
+
+    return snapshot.docs.length;
+  }
+
+  Future<int> getBuildingOccupiedUnits(String buildingId) async {
+    final snapshot = await _units
+        .where('organizationId', isEqualTo: _organizationId)
+        .where('buildingId', isEqualTo: buildingId)
+        .where('status', isEqualTo: UnitStatus.occupied.name)
+        .get();
+
+    return snapshot.docs.length;
+  }
+
+  Future<int> getBuildingVacantUnits(String buildingId) async {
+    final snapshot = await _units
+        .where('organizationId', isEqualTo: _organizationId)
+        .where('buildingId', isEqualTo: buildingId)
+        .where('status', isEqualTo: UnitStatus.vacant.name)
+        .get();
+
+    return snapshot.docs.length;
+  }
+
+  // =====================================================
+  // REVENUE
+  // =====================================================
+
+  Future<double> getMonthlyRevenue() async {
+    final snapshot = await _units
+        .where('organizationId', isEqualTo: _organizationId)
+        .get();
+
+    double total = 0;
 
     for (final doc in snapshot.docs) {
-      revenue += (doc.data()['monthlyRent'] ?? 0).toDouble();
+      total += (doc.data()['monthlyRent'] ?? 0).toDouble();
     }
 
-    return revenue;
+    return total;
   }
 
-  // ===============================
-  // Vacant Count
-  // ===============================
-
-  Future<int> getVacantCount(String buildingId) async {
+  Future<double> getBuildingRevenue(String buildingId) async {
     final snapshot = await _units
-        .where(
-      'buildingId',
-      isEqualTo: buildingId,
-    )
-        .where(
-      'status',
-      isEqualTo: UnitStatus.vacant.name,
-    )
+        .where('organizationId', isEqualTo: _organizationId)
+        .where('buildingId', isEqualTo: buildingId)
         .get();
 
-    return snapshot.docs.length;
+    double total = 0;
+
+    for (final doc in snapshot.docs) {
+      total += (doc.data()['monthlyRent'] ?? 0).toDouble();
+    }
+
+    return total;
   }
 
-  // ===============================
-  // Occupied Count
-  // ===============================
+  // =====================================================
+  // OCCUPANCY
+  // =====================================================
 
-  Future<int> getOccupiedCount(String buildingId) async {
-    final snapshot = await _units
-        .where(
-      'buildingId',
-      isEqualTo: buildingId,
-    )
-        .where(
-      'status',
-      isEqualTo: UnitStatus.occupied.name,
-    )
-        .get();
+  Future<double> getOccupancyRate() async {
+    final total = await getTotalUnits();
 
-    return snapshot.docs.length;
+    if (total == 0) return 0;
+
+    final occupied = await getOccupiedCount();
+
+    return (occupied / total) * 100;
   }
 
-  // ===============================
-  // Total Units
-  // ===============================
+  Future<double> getBuildingOccupancyRate(
+      String buildingId,
+      ) async {
+    final total = await getBuildingTotalUnits(buildingId);
 
-  Future<int> getTotalUnits(String buildingId) async {
-    final snapshot = await _units
-        .where(
-      'buildingId',
-      isEqualTo: buildingId,
-    )
-        .get();
+    if (total == 0) return 0;
 
-    return snapshot.docs.length;
+    final occupied = await getBuildingOccupiedUnits(buildingId);
+
+    return (occupied / total) * 100;
   }
 }

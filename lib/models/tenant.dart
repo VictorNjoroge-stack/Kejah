@@ -9,6 +9,7 @@ class Tenant {
   // Relationships
   final String buildingId;
   final String unitId;
+  final String organizationId;
 
   // Financial
   final double rent;
@@ -26,6 +27,7 @@ class Tenant {
     required this.email,
     required this.nationalId,
     required this.buildingId,
+    required this.organizationId,
     required this.unitId,
     required this.rent,
     required this.deposit,
@@ -44,6 +46,7 @@ class Tenant {
       email: map['email'] ?? '',
       nationalId: map['nationalId'] ?? '',
       buildingId: map['buildingId'] ?? '',
+      organizationId: map['organizationId'] ?? '',
       unitId: map['unitId'] ?? '',
       rent: (map['rent'] ?? 0).toDouble(),
       deposit: (map['deposit'] ?? 0).toDouble(),
@@ -62,6 +65,7 @@ class Tenant {
       'email': email,
       'nationalId': nationalId,
       'buildingId': buildingId,
+      'organizationId': organizationId,
       'unitId': unitId,
       'rent': rent,
       'deposit': deposit,
@@ -77,6 +81,7 @@ class Tenant {
     String? email,
     String? nationalId,
     String? buildingId,
+    String? organizationId,
     String? unitId,
     double? rent,
     double? deposit,
@@ -90,6 +95,7 @@ class Tenant {
       email: email ?? this.email,
       nationalId: nationalId ?? this.nationalId,
       buildingId: buildingId ?? this.buildingId,
+      organizationId: organizationId ?? this.organizationId,
       unitId: unitId ?? this.unitId,
       rent: rent ?? this.rent,
       deposit: deposit ?? this.deposit,

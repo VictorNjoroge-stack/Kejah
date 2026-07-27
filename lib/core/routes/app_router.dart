@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
 
+import '../../screens/add_building_screen.dart';
+import '../../screens/add_payment_screen.dart';
+import '../../screens/analytics_screen.dart';
+import '../../screens/buildings_screen.dart';
+import '../../screens/dashboard_screen.dart';
 import '../../screens/login_screen.dart';
+import '../../screens/onboarding_screen.dart';
+import '../../screens/payments_screen.dart';
 import '../../screens/register_screen.dart';
 import '../../screens/splash_screen.dart';
-import '../../screens/onboarding_screen.dart';
-import '../../screens/dashboard_screen.dart';
-import '../../screens/buildings_screen.dart';
-import '../../screens/add_building_screen.dart';
-import '../../screens/analytics_screen.dart';
-import '../../screens/payments_screen.dart';
-import '../../screens/add_payment_screen.dart';
 import '../../screens/tenants_screen.dart';
-import '../../screens/add_tenant_screen.dart';
 
 import 'app_routes.dart';
 
@@ -45,7 +44,7 @@ class AppRouter {
 
       case AppRoutes.buildings:
         return MaterialPageRoute(
-          builder: (_) => const BuildingsScreen(),
+          builder: (_) => BuildingsScreen(),
         );
 
       case AppRoutes.addBuilding:
@@ -55,17 +54,16 @@ class AppRouter {
 
       case AppRoutes.tenants:
         return MaterialPageRoute(
-          builder: (_) => const TenantsScreen(),
+          builder: (_) => TenantsScreen(),
         );
 
-      case AppRoutes.addTenant:
-        return MaterialPageRoute(
-          builder: (_) => const AddTenantScreen(),
-        );
+    // AddTenantScreen is opened from Unit Details
+    // because it requires a Building and Unit.
+    // Do not register it as a global route.
 
       case AppRoutes.payments:
         return MaterialPageRoute(
-          builder: (_) => const PaymentsScreen(),
+          builder: (_) => PaymentsScreen(),
         );
 
       case AppRoutes.addPayment:
@@ -75,18 +73,18 @@ class AppRouter {
 
       case AppRoutes.analytics:
         return MaterialPageRoute(
-          builder: (_) => const AnalyticsScreen(),
+          builder: (_) => AnalyticsScreen(),
         );
 
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(
             appBar: AppBar(
-              title: const Text('Page Not Found'),
+              title: const Text("Page Not Found"),
             ),
             body: Center(
               child: Text(
-                'No route defined for ${settings.name}',
+                "No route defined for ${settings.name}",
               ),
             ),
           ),

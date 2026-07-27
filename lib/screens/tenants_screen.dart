@@ -1,58 +1,178 @@
 import 'package:flutter/material.dart';
-import '../data/tenant_data.dart';
-import 'add_tenant_screen.dart';
 
-class TenantsScreen extends StatefulWidget {
-  const TenantsScreen({super.key});
+import '../models/tenant.dart';
+import '../services/tenant_service.dart';
+import 'tenant_profile_screen.dart';
 
-  @override
-  State<TenantsScreen> createState() => _TenantsScreenState();
+class TenantsScreen extends StatelessWidget {
+TenantsScreen({super.key});
+
+final TenantService _service = TenantService();
+
+@override
+Widget build(BuildContext context) {
+return Scaffold(
+appBar: AppBar(
+title: const Text("Tenants"),
+),
+body: StreamBuilder<List<Tenant>>(
+stream: _service.getTenants(),
+builder: (context, snapshot) {
+if (snapshot.connectionState ==
+ConnectionState.waiting) {
+return const Center(
+child: CircularProgressIndicator(),
+);
 }
 
-class _TenantsScreenState extends State<TenantsScreen> {
-  @override
-  Widget build(BuildContext context) {
-    final tenants = TenantData.tenants;
+if (snapshot.hasError) {
+return Center(
+child: Text(snapshot.error.toString()),
+);
+}
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Tenants')),
-      body: tenants.isEmpty
-          ? const Center(child: Text('No tenants added yet'))
-          : ListView.builder(
-        itemCount: tenants.length,
-        itemBuilder: (context, index) {
-          final tenant = tenants[index];
+final tenants = snapshot.data ?? [];
 
-          return Card(
-            child: ListTile(
-              leading: const Icon(Icons.person),
-              title: Text(tenant['name']),
-              subtitle: Text(
-                '${tenant['propertyName']} • KES ${tenant['rent']}',
-              ),
-              trailing: IconButton(
-                icon: const Icon(Icons.delete),
-                onPressed: () {
-                  TenantData.deleteTenant(index);
-                  setState(() {});
-                },
-              ),
-            ),
-          );
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => const AddTenantScreen(),
-            ),
-          );
-          setState(() {});
-        },
-        child: const Icon(Icons.add),
-      ),
-    );
-  }
+if (tenants.isEmpty) {
+return const Center(
+child: Text(
+"No tenants found.\n\nAssign a tenant from a Unit.",
+textAlign: TextAlign.center,
+style: TextStyle(
+fontSize: 18,
+),
+),
+);
+}
+
+return ListView.separated(
+padding: const EdgeInsets.all(16),
+itemCount: tenants.length,
+  separatorBuilder: (context, index) =>
+  const SizedBox(height: 12),
+itemBuilder: (context, index) {
+final tenant = tenants[index];
+
+return Card(
+elevation: 3,
+child: InkWell(
+borderRadius:
+BorderRadius.circular(12),
+onTap: () {
+Navigator.push(
+context,
+MaterialPageRoute(
+builder: (_) =>
+TenantProfileScreen(
+tenant: tenant,
+),
+),
+);
+},
+child: Padding(
+padding:
+const EdgeInsets.all(16),
+child: Row(
+children: [
+const CircleAvatar(
+radius: 28,
+child: Icon(
+Icons.person,
+),
+),
+
+const SizedBox(width: 16),
+
+Expanded(
+child: Column(
+crossAxisAlignment:
+CrossAxisAlignment
+.start,
+children: [
+Text(
+tenant.name,
+style:
+const TextStyle(
+fontSize: 18,
+fontWeight:
+FontWeight
+.bold,
+),
+),
+
+const SizedBox(
+height: 6,
+),
+
+Text(
+tenant.phone,
+),
+
+const SizedBox(
+height: 4,
+),
+
+Text(
+"Unit: ${tenant.unitId}",
+),
+
+const SizedBox(
+height: 4,
+),
+
+Text(
+"Rent: KES ${tenant.rent.toStringAsFixed(0)}",
+),
+
+const SizedBox(
+height: 8,
+),
+
+Chip(
+label: Text(
+tenant.active
+? "ACTIVE"
+: "VACATED",
+),
+avatar: Icon(
+tenant.active
+? Icons
+.check_circle
+: Icons.cancel,
+size: 18,
+),
+),
+],
+),
+),
+
+PopupMenuButton<String>(
+onSelected:
+(value) async {
+if (value ==
+"delete") {
+await _service
+.deleteTenant(
+tenant.id,
+);
+}
+},
+itemBuilder: (_) =>
+const [PopupMenuItem(
+  value: "delete",
+  child: Text("Delete"),
+),
+],
+),
+],
+),
+),
+),
+);
+},
+);
+},
+),
+);
+}
 }
