@@ -3,7 +3,6 @@ import '../../models/lease.dart';
 import '../../models/lease_status.dart';
 import '../../services/lease_service.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:intl/intl.dart';
 
 class LeaseSigningScreen extends StatefulWidget {
   final Lease lease;
@@ -20,7 +19,9 @@ class _LeaseSigningScreenState extends State<LeaseSigningScreen> {
   final _leaseService = LeaseService();
 
   Future<void> _pickAndUploadLease() async {
-    final result = await FilePicker.platform.pickFiles(
+    // Correct API call for modern file_picker versions (like 11.0.2)
+    // The library uses a static method directly on the class.
+    final result = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['pdf'],
     );
@@ -33,7 +34,6 @@ class _LeaseSigningScreenState extends State<LeaseSigningScreen> {
 
       try {
         // TODO: In a production app, upload file to Firebase Storage first
-        // String downloadUrl = await _uploadToStorage(result.files.first);
         const String mockDownloadUrl = "https://firebasestorage.googleapis.com/v0/b/kejah/o/leases/signed_lease.pdf";
 
         // Update Lease in Firestore
