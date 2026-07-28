@@ -63,6 +63,11 @@ class UnitCard extends StatelessWidget {
                       ),
                     ),
                   ),
+                  if (unit.isPublic)
+                    const Padding(
+                      padding: EdgeInsets.only(right: 8),
+                      child: Icon(Icons.shop_outlined, size: 16, color: Colors.indigo),
+                    ),
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 10,

@@ -16,6 +16,7 @@ import '../../screens/payments_screen.dart';
 import '../../screens/register_screen.dart';
 import '../../screens/splash_screen.dart';
 import '../../screens/tenants_screen.dart';
+import '../../screens/organization/organization_settings_screen.dart';
 
 import 'app_routes.dart';
 
@@ -104,6 +105,11 @@ class AppRouter {
       case AppRoutes.addLease:
         return MaterialPageRoute(
           builder: (_) => const AddLeaseScreen(),
+        );
+
+      case AppRoutes.settings:
+        return MaterialPageRoute(
+          builder: (_) => const OrganizationSettingsScreen(),
         );
 
       default:

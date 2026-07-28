@@ -20,6 +20,7 @@ class _OrganizationSettingsScreenState extends State<OrganizationSettingsScreen>
   late TextEditingController _phoneController;
   late TextEditingController _addressController;
   late TextEditingController _paybillController;
+  late TextEditingController _currencyController;
   
   bool _isLoading = false;
   String? _logoUrl;
@@ -32,7 +33,7 @@ class _OrganizationSettingsScreenState extends State<OrganizationSettingsScreen>
     _emailController = TextEditingController(text: org.email);
     _phoneController = TextEditingController(text: org.phone);
     _addressController = TextEditingController(text: org.address);
-    // Using notes/extra field for Paybill in MVP or add to Model
+    _currencyController = TextEditingController(text: org.currencyCode);
     _paybillController = TextEditingController(); 
     _logoUrl = org.logoUrl;
   }
@@ -70,6 +71,7 @@ class _OrganizationSettingsScreenState extends State<OrganizationSettingsScreen>
         email: _emailController.text.trim(),
         phone: _phoneController.text.trim(),
         address: _addressController.text.trim(),
+        currencyCode: _currencyController.text.trim().toUpperCase(),
         logoUrl: _logoUrl,
         updatedAt: DateTime.now(),
       );
@@ -141,6 +143,11 @@ class _OrganizationSettingsScreenState extends State<OrganizationSettingsScreen>
                   TextFormField(
                     controller: _phoneController,
                     decoration: const InputDecoration(labelText: "Business Phone", border: OutlineInputBorder()),
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _currencyController,
+                    decoration: const InputDecoration(labelText: "Currency Code (e.g. KES, USD)", border: OutlineInputBorder()),
                   ),
                   const SizedBox(height: 32),
                   const Text("M-Pesa Integration", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.indigo)),

@@ -20,6 +20,16 @@ class ReceiptService {
     final dateFormat = DateFormat('MMM dd, yyyy');
     final currencyFormat = NumberFormat.currency(symbol: org.currencyCode + ' ');
 
+    pw.MemoryImage? logoImage;
+    if (org.logoUrl != null && org.logoUrl!.isNotEmpty) {
+      try {
+        final logoProvider = await networkImage(org.logoUrl!);
+        logoImage = logoProvider;
+      } catch (e) {
+        print("Error loading logo for receipt: $e");
+      }
+    }
+
     pdf.addPage(
       pw.Page(
         pageFormat: PdfPageFormat.a5,
@@ -33,13 +43,22 @@ class ReceiptService {
                 pw.Row(
                   mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                   children: [
-                    pw.Column(
-                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    pw.Row(
                       children: [
-                        pw.Text(org.name, style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
-                        pw.Text(org.address),
-                        pw.Text(org.phone),
-                        pw.Text(org.email),
+                        if (logoImage != null)
+                          pw.Padding(
+                            padding: const pw.EdgeInsets.only(right: 12),
+                            child: pw.Image(logoImage, width: 50, height: 50),
+                          ),
+                        pw.Column(
+                          crossAxisAlignment: pw.CrossAxisAlignment.start,
+                          children: [
+                            pw.Text(org.name, style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+                            pw.Text(org.address),
+                            pw.Text(org.phone),
+                            pw.Text(org.email),
+                          ],
+                        ),
                       ],
                     ),
                     pw.Column(
