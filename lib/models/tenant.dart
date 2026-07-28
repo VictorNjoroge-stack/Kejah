@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Tenant {
   final String id;
 
@@ -51,10 +53,7 @@ class Tenant {
       rent: (map['rent'] ?? 0).toDouble(),
       deposit: (map['deposit'] ?? 0).toDouble(),
       active: map['active'] ?? true,
-      createdAt: DateTime.tryParse(
-        map['createdAt'] ?? '',
-      ) ??
-          DateTime.now(),
+      createdAt: _dateTime(map['createdAt']),
     );
   }
 
@@ -70,8 +69,15 @@ class Tenant {
       'rent': rent,
       'deposit': deposit,
       'active': active,
-      'createdAt': createdAt.toIso8601String(),
+      'createdAt': Timestamp.fromDate(createdAt),
     };
+  }
+
+  static DateTime _dateTime(dynamic value) {
+    if (value is Timestamp) return value.toDate();
+    if (value is DateTime) return value;
+    if (value is String) return DateTime.tryParse(value) ?? DateTime.now();
+    return DateTime.now();
   }
 
   Tenant copyWith({

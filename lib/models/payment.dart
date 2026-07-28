@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Payment {
   final String id;
 
@@ -46,10 +48,8 @@ class Payment {
       paymentMethod: map['paymentMethod'] ?? '',
       reference: map['reference'] ?? '',
       notes: map['notes'] ?? '',
-      paymentDate:
-      DateTime.tryParse(map['paymentDate'] ?? '') ?? DateTime.now(),
-      createdAt:
-      DateTime.tryParse(map['createdAt'] ?? '') ?? DateTime.now(),
+      paymentDate: _dateTime(map['paymentDate']),
+      createdAt: _dateTime(map['createdAt']),
     );
   }
 
@@ -63,9 +63,16 @@ class Payment {
       'paymentMethod': paymentMethod,
       'reference': reference,
       'notes': notes,
-      'paymentDate': paymentDate.toIso8601String(),
-      'createdAt': createdAt.toIso8601String(),
+      'paymentDate': Timestamp.fromDate(paymentDate),
+      'createdAt': Timestamp.fromDate(createdAt),
     };
+  }
+
+  static DateTime _dateTime(dynamic value) {
+    if (value is Timestamp) return value.toDate();
+    if (value is DateTime) return value;
+    if (value is String) return DateTime.tryParse(value) ?? DateTime.now();
+    return DateTime.now();
   }
 
   Payment copyWith({

@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'maintenance_priority.dart';
 import 'maintenance_status.dart';
 
@@ -66,17 +67,10 @@ class Maintenance {
       ),
       assignedTo: map['assignedTo'] ?? '',
       photos: List<String>.from(map['photos'] ?? []),
-      reportedAt: DateTime.tryParse(
-        map['reportedAt'] ?? '',
-      ) ??
-          DateTime.now(),
-      completedAt: map['completedAt'] == null
-          ? null
-          : DateTime.tryParse(map['completedAt']),
-      estimatedCost:
-      (map['estimatedCost'] ?? 0).toDouble(),
-      actualCost:
-      (map['actualCost'] ?? 0).toDouble(),
+      reportedAt: _dateTime(map['reportedAt']),
+      completedAt: map['completedAt'] == null ? null : _dateTime(map['completedAt']),
+      estimatedCost: (map['estimatedCost'] ?? 0).toDouble(),
+      actualCost: (map['actualCost'] ?? 0).toDouble(),
     );
   }
 
@@ -92,11 +86,18 @@ class Maintenance {
       'status': status.name,
       'assignedTo': assignedTo,
       'photos': photos,
-      'reportedAt': reportedAt.toIso8601String(),
-      'completedAt': completedAt?.toIso8601String(),
+      'reportedAt': Timestamp.fromDate(reportedAt),
+      'completedAt': completedAt != null ? Timestamp.fromDate(completedAt!) : null,
       'estimatedCost': estimatedCost,
       'actualCost': actualCost,
     };
+  }
+
+  static DateTime _dateTime(dynamic value) {
+    if (value is Timestamp) return value.toDate();
+    if (value is DateTime) return value;
+    if (value is String) return DateTime.tryParse(value) ?? DateTime.now();
+    return DateTime.now();
   }
 
   Maintenance copyWith({

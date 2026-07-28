@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'lease_status.dart';
 
 class Lease {
@@ -25,6 +26,8 @@ class Lease {
 
   // Documents
   final String agreementUrl;
+  final String signedAgreementUrl;
+  final bool isSigned;
 
   // Extra Notes
   final String notes;
@@ -45,6 +48,8 @@ class Lease {
     required this.endDate,
     required this.status,
     required this.agreementUrl,
+    this.signedAgreementUrl = '',
+    this.isSigned = false,
     required this.notes,
     required this.createdAt,
   });
@@ -63,18 +68,17 @@ class Lease {
       monthlyRent: (map['monthlyRent'] ?? 0).toDouble(),
       deposit: (map['deposit'] ?? 0).toDouble(),
       billingDay: map['billingDay'] ?? 1,
-      startDate:
-      DateTime.tryParse(map['startDate'] ?? '') ?? DateTime.now(),
-      endDate:
-      DateTime.tryParse(map['endDate'] ?? '') ?? DateTime.now(),
+      startDate: _dateTime(map['startDate']),
+      endDate: _dateTime(map['endDate']),
       status: LeaseStatus.values.firstWhere(
             (e) => e.name == map['status'],
         orElse: () => LeaseStatus.pending,
       ),
       agreementUrl: map['agreementUrl'] ?? '',
+      signedAgreementUrl: map['signedAgreementUrl'] ?? '',
+      isSigned: map['isSigned'] ?? false,
       notes: map['notes'] ?? '',
-      createdAt:
-      DateTime.tryParse(map['createdAt'] ?? '') ?? DateTime.now(),
+      createdAt: _dateTime(map['createdAt']),
     );
   }
 
@@ -88,13 +92,22 @@ class Lease {
       'monthlyRent': monthlyRent,
       'deposit': deposit,
       'billingDay': billingDay,
-      'startDate': startDate.toIso8601String(),
-      'endDate': endDate.toIso8601String(),
+      'startDate': Timestamp.fromDate(startDate),
+      'endDate': Timestamp.fromDate(endDate),
       'status': status.name,
       'agreementUrl': agreementUrl,
+      'signedAgreementUrl': signedAgreementUrl,
+      'isSigned': isSigned,
       'notes': notes,
-      'createdAt': createdAt.toIso8601String(),
+      'createdAt': Timestamp.fromDate(createdAt),
     };
+  }
+
+  static DateTime _dateTime(dynamic value) {
+    if (value is Timestamp) return value.toDate();
+    if (value is DateTime) return value;
+    if (value is String) return DateTime.tryParse(value) ?? DateTime.now();
+    return DateTime.now();
   }
 
   Lease copyWith({
@@ -111,6 +124,8 @@ class Lease {
     DateTime? endDate,
     LeaseStatus? status,
     String? agreementUrl,
+    String? signedAgreementUrl,
+    bool? isSigned,
     String? notes,
     DateTime? createdAt,
   }) {
@@ -128,6 +143,8 @@ class Lease {
       endDate: endDate ?? this.endDate,
       status: status ?? this.status,
       agreementUrl: agreementUrl ?? this.agreementUrl,
+      signedAgreementUrl: signedAgreementUrl ?? this.signedAgreementUrl,
+      isSigned: isSigned ?? this.isSigned,
       notes: notes ?? this.notes,
       createdAt: createdAt ?? this.createdAt,
     );

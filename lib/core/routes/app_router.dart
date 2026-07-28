@@ -4,8 +4,13 @@ import '../../screens/add_building_screen.dart';
 import '../../screens/add_payment_screen.dart';
 import '../../screens/analytics_screen.dart';
 import '../../screens/buildings_screen.dart';
-import '../../screens/dashboard_screen.dart';
+import '../../screens/dashboard/dashboard_screen.dart';
+import '../../screens/lease/lease_list_screen.dart';
+import '../../screens/lease/add_lease_screen.dart';
+import '../../screens/marketplace_screen.dart';
 import '../../screens/login_screen.dart';
+import '../../screens/maintenance/maintenance_list_screen.dart';
+import '../../screens/maintenance/add_maintenance_screen.dart';
 import '../../screens/onboarding_screen.dart';
 import '../../screens/payments_screen.dart';
 import '../../screens/register_screen.dart';
@@ -74,6 +79,31 @@ class AppRouter {
       case AppRoutes.analytics:
         return MaterialPageRoute(
           builder: (_) => AnalyticsScreen(),
+        );
+
+      case AppRoutes.marketplace:
+        return MaterialPageRoute(
+          builder: (_) => const MarketplaceScreen(),
+        );
+
+      case AppRoutes.maintenance:
+        return MaterialPageRoute(
+          builder: (_) => const MaintenanceListScreen(),
+        );
+
+      case AppRoutes.addMaintenance:
+        return MaterialPageRoute(
+          builder: (_) => const AddMaintenanceScreen(),
+        );
+
+      case AppRoutes.lease:
+        return MaterialPageRoute(
+          builder: (_) => const LeaseListScreen(),
+        );
+
+      case AppRoutes.addLease:
+        return MaterialPageRoute(
+          builder: (_) => const AddLeaseScreen(),
         );
 
       default:

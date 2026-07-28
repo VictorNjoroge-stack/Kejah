@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class AppUser {
   final String id;
   final String organizationId;
@@ -34,10 +36,7 @@ class AppUser {
       role: map['role'] ?? 'owner',
       profileCompleted: map['profileCompleted'] ?? false,
       active: map['active'] ?? true,
-      createdAt: DateTime.tryParse(
-        map['createdAt'] ?? '',
-      ) ??
-          DateTime.now(),
+      createdAt: _dateTime(map['createdAt']),
     );
   }
 
@@ -50,7 +49,14 @@ class AppUser {
       'role': role,
       'profileCompleted': profileCompleted,
       'active': active,
-      'createdAt': createdAt.toIso8601String(),
+      'createdAt': Timestamp.fromDate(createdAt),
     };
+  }
+
+  static DateTime _dateTime(dynamic value) {
+    if (value is Timestamp) return value.toDate();
+    if (value is DateTime) return value;
+    if (value is String) return DateTime.tryParse(value) ?? DateTime.now();
+    return DateTime.now();
   }
 }

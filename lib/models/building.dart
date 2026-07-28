@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Building {
   final String id;
 
@@ -110,10 +112,7 @@ class Building {
       images: List<String>.from(map['images'] ?? []),
       verified: map['verified'] ?? false,
       active: map['active'] ?? true,
-      createdAt: DateTime.tryParse(
-        map['createdAt'] ?? '',
-      ) ??
-          DateTime.now(),
+      createdAt: _dateTime(map['createdAt']),
       totalUnits: map['totalUnits'] ?? 0,
       occupiedUnits: map['occupiedUnits'] ?? 0,
       vacantUnits: map['vacantUnits'] ?? 0,
@@ -145,13 +144,20 @@ class Building {
       'images': images,
       'verified': verified,
       'active': active,
-      'createdAt': createdAt.toIso8601String(),
+      'createdAt': Timestamp.fromDate(createdAt),
       'totalUnits': totalUnits,
       'occupiedUnits': occupiedUnits,
       'vacantUnits': vacantUnits,
       'monthlyRevenue': monthlyRevenue,
       'expectedRevenue': expectedRevenue,
     };
+  }
+
+  static DateTime _dateTime(dynamic value) {
+    if (value is Timestamp) return value.toDate();
+    if (value is DateTime) return value;
+    if (value is String) return DateTime.tryParse(value) ?? DateTime.now();
+    return DateTime.now();
   }
 
   Building copyWith({

@@ -33,7 +33,9 @@ class AppRoutes {
 
   // Future
   static const maintenance = '/maintenance';
+  static const addMaintenance = '/add-maintenance';
   static const lease = '/lease';
+  static const addLease = '/add-lease';
   static const profile = '/profile';
   static const settings = '/settings';
 }
