@@ -61,7 +61,7 @@ class TenantPortalScreen extends StatelessWidget {
 
         return Card(
           color: Colors.green[50],
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), border: Border.all(color: Colors.green[200]!)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: Colors.green[200]!)),
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: Column(

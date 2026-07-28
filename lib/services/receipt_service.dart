@@ -20,7 +20,7 @@ class ReceiptService {
     final dateFormat = DateFormat('MMM dd, yyyy');
     final currencyFormat = NumberFormat.currency(symbol: org.currencyCode + ' ');
 
-    pw.MemoryImage? logoImage;
+    pw.ImageProvider? logoImage;
     if (org.logoUrl != null && org.logoUrl!.isNotEmpty) {
       try {
         final logoProvider = await networkImage(org.logoUrl!);
